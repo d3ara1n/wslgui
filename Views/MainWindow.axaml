@@ -1,0 +1,164 @@
+<husk:AppWindow xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:vm="using:WslGui.ViewModels"
+                xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                mc:Ignorable="d"
+                d:DesignWidth="1180"
+                d:DesignHeight="760"
+                x:Class="WslGui.Views.MainWindow"
+                x:DataType="vm:MainWindowViewModel"
+                Icon="/Assets/avalonia-logo.ico"
+                Width="1180"
+                Height="760"
+                MinWidth="980"
+                MinHeight="620"
+                Title="WSL 管理器">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="18" RowSpacing="14">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <StackPanel>
+                <TextBlock Text="WSL 管理器" FontSize="24" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding StatusMessage}" Opacity="0.72" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="刷新" Command="{Binding RefreshCommand}" />
+                <Button Content="关闭全部" Command="{Binding ShutdownAllCommand}" />
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
+            <husk:Card>
+                <Grid Margin="14" RowDefinitions="Auto,Auto">
+                    <TextBlock Text="发行版" Opacity="0.68" />
+                    <TextBlock Grid.Row="1" Text="{Binding TotalCount}" FontSize="26" FontWeight="SemiBold" />
+                </Grid>
+            </husk:Card>
+
+            <husk:Card Grid.Column="1">
+                <Grid Margin="14" RowDefinitions="Auto,Auto">
+                    <TextBlock Text="运行中" Opacity="0.68" />
+                    <TextBlock Grid.Row="1" Text="{Binding RunningCount}" FontSize="26" FontWeight="SemiBold" />
+                </Grid>
+            </husk:Card>
+
+            <husk:Card Grid.Column="2">
+                <Grid Margin="14" RowDefinitions="Auto,Auto">
+                    <TextBlock Text="已停止" Opacity="0.68" />
+                    <TextBlock Grid.Row="1" Text="{Binding StoppedCount}" FontSize="26" FontWeight="SemiBold" />
+                </Grid>
+            </husk:Card>
+
+            <husk:Card Grid.Column="3">
+                <Grid Margin="14" RowDefinitions="Auto,Auto">
+                    <TextBlock Text="保活策略" Opacity="0.68" />
+                    <TextBlock Grid.Row="1" Text="{Binding ActiveKeepAliveCount}" FontSize="26" FontWeight="SemiBold" />
+                </Grid>
+            </husk:Card>
+        </Grid>
+
+        <Grid Grid.Row="2" ColumnDefinitions="2*,1.1*" ColumnSpacing="14">
+            <husk:Card>
+                <Grid Margin="14" RowDefinitions="Auto,Auto,*" RowSpacing="10">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBlock Text="发行版列表" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding LastRefreshText}" Opacity="0.62" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Border Grid.Row="1" Padding="10,8" Background="#0E000000" CornerRadius="6">
+                        <Grid ColumnDefinitions="2*,90,70,110,110,130" ColumnSpacing="8">
+                            <TextBlock Text="名称" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="1" Text="状态" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="2" Text="WSL" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="3" Text="默认" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="4" Text="保活" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="5" Text="最近心跳" FontWeight="SemiBold" />
+                        </Grid>
+                    </Border>
+
+                    <ListBox Grid.Row="2"
+                             ItemsSource="{Binding Distributions}"
+                             SelectedItem="{Binding SelectedDistribution}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:WslDistributionRow">
+                                <Border Padding="10" CornerRadius="6">
+                                    <Grid ColumnDefinitions="2*,90,70,110,110,130" ColumnSpacing="8">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="1" Text="{Binding State}" />
+                                        <TextBlock Grid.Column="2" Text="{Binding VersionText}" />
+                                        <TextBlock Grid.Column="3" Text="{Binding DefaultMarker}" />
+                                        <TextBlock Grid.Column="4" Text="{Binding KeepAliveState}" />
+                                        <TextBlock Grid.Column="5" Text="{Binding LastPingText}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </husk:Card>
+
+            <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*" RowSpacing="14">
+                <husk:Card>
+                    <Grid Margin="14" RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+                        <TextBlock Text="实例操作" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="1" Text="{Binding SelectedDistributionName}" FontSize="18" TextTrimming="CharacterEllipsis" />
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
+                            <Button Content="启动" Classes="Primary" Command="{Binding StartSelectedCommand}" />
+                            <Button Content="停止" Command="{Binding StopSelectedCommand}" />
+                        </StackPanel>
+                    </Grid>
+                </husk:Card>
+
+                <husk:Card Grid.Row="1">
+                    <Grid Margin="14" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
+                        <TextBlock Text="保活管理" FontSize="16" FontWeight="SemiBold" />
+
+                        <ComboBox Grid.Row="1"
+                                  ItemsSource="{Binding KeepAliveModes}"
+                                  SelectedItem="{Binding SelectedKeepAliveMode}"
+                                  HorizontalAlignment="Stretch" />
+
+                        <Grid Grid.Row="2" ColumnDefinitions="*,110" ColumnSpacing="10">
+                            <TextBlock Text="心跳间隔（秒）" VerticalAlignment="Center" />
+                            <NumericUpDown Grid.Column="1"
+                                           Minimum="5"
+                                           Maximum="86400"
+                                           Increment="5"
+                                           Value="{Binding IntervalSeconds}" />
+                        </Grid>
+
+                        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8">
+                            <Button Content="启用保活" Classes="Success" Command="{Binding StartKeepAliveSelectedCommand}" />
+                            <Button Content="停止保活" Command="{Binding StopKeepAliveSelectedCommand}" />
+                        </StackPanel>
+
+                        <Grid Grid.Row="4" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
+                            <TextBlock Text="{Binding SelectedDistribution.KeepAliveMode, FallbackValue=无}" Opacity="0.72" />
+                            <TextBlock Grid.Row="1" Text="{Binding SelectedDistribution.ErrorSummary, FallbackValue=无}" TextWrapping="Wrap" Opacity="0.72" />
+                            <TextBlock Grid.Row="2" Text="周期心跳适合低频唤醒；驻留进程适合作为服务运行。" Opacity="0.62" TextWrapping="Wrap" />
+                        </Grid>
+                    </Grid>
+                </husk:Card>
+
+                <husk:Card Grid.Row="2">
+                    <Grid Margin="14" RowDefinitions="Auto,*" RowSpacing="10">
+                        <TextBlock Text="WSL 状态" FontSize="16" FontWeight="SemiBold" />
+                        <ScrollViewer Grid.Row="1">
+                            <TextBlock Text="{Binding WslStatusText}" FontFamily="Consolas" TextWrapping="Wrap" />
+                        </ScrollViewer>
+                    </Grid>
+                </husk:Card>
+            </Grid>
+        </Grid>
+
+        <TextBlock Grid.Row="3"
+                   Text="保活任务仅在本程序运行期间生效；关闭窗口会停止由本程序启动的保活进程。"
+                   Opacity="0.62" />
+    </Grid>
+</husk:AppWindow>

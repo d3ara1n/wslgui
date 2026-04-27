@@ -1,0 +1,39 @@
+## Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## .NET
+*.nupkg
+*.snupkg
+project.lock.json
+project.assets.json
+artifacts/
+TestResults/
+coverage/
+coverage.xml
+coverage.opencover.xml
+
+## Publish output
+publish/
+app.publish/
+
+## OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+## Local environment
+.env
+.env.*
+!.env.example
