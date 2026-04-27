@@ -24,6 +24,14 @@ dotnet run
 dotnet build
 ```
 
+## 发布单文件
+
+```powershell
+.\scripts\publish-single.ps1
+```
+
+默认发布 `win-x64`、Release、自包含、单文件可执行程序，输出到 `artifacts\publish\win-x64-single\WslGui.exe`。
+
 ## 说明
 
 保活策略只在本程序运行期间生效。点击窗口关闭按钮只会隐藏主界面，托盘菜单仍可重新打开窗口；只有通过托盘菜单选择“退出”时，程序才会取消心跳任务，并终止由本程序启动的驻留保活进程。
