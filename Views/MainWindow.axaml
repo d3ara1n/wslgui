@@ -1,6 +1,7 @@
 <husk:AppWindow xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:vm="using:WslGui.ViewModels"
+                xmlns:models="using:WslGui.Models"
                 xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -103,62 +104,138 @@
                 </Grid>
             </husk:Card>
 
-            <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*" RowSpacing="14">
-                <husk:Card>
-                    <Grid Margin="14" RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
-                        <TextBlock Text="实例操作" FontSize="16" FontWeight="SemiBold" />
-                        <TextBlock Grid.Row="1" Text="{Binding SelectedDistributionName}" FontSize="18" TextTrimming="CharacterEllipsis" />
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
-                            <Button Content="启动" Classes="Primary" Command="{Binding StartSelectedCommand}" />
-                            <Button Content="停止" Command="{Binding StopSelectedCommand}" />
-                        </StackPanel>
-                    </Grid>
-                </husk:Card>
+            <husk:Card Grid.Column="1">
+                <Grid Margin="14" RowDefinitions="Auto,*" RowSpacing="10">
+                    <TextBlock Text="{Binding SelectedDistributionName}" FontSize="18" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
 
-                <husk:Card Grid.Row="1">
-                    <Grid Margin="14" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
-                        <TextBlock Text="保活管理" FontSize="16" FontWeight="SemiBold" />
+                    <TabControl Grid.Row="1">
+                        <TabItem Header="操作">
+                            <ScrollViewer>
+                                <StackPanel Spacing="12">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Content="启动" Classes="Primary" Command="{Binding StartSelectedCommand}" />
+                                        <Button Content="停止" Command="{Binding StopSelectedCommand}" />
+                                    </StackPanel>
 
-                        <ComboBox Grid.Row="1"
-                                  ItemsSource="{Binding KeepAliveModes}"
-                                  SelectedItem="{Binding SelectedKeepAliveMode}"
-                                  HorizontalAlignment="Stretch" />
+                                    <TextBlock Text="快速入口" FontWeight="SemiBold" />
+                                    <WrapPanel Orientation="Horizontal">
+                                        <Button Content="终端" Margin="0,0,8,8" Command="{Binding OpenTerminalCommand}" />
+                                        <Button Content="根目录" Margin="0,0,8,8" Command="{Binding OpenRootDirectoryCommand}" />
+                                        <Button Content="Home" Margin="0,0,8,8" Command="{Binding OpenHomeDirectoryCommand}" />
+                                        <Button Content="复制 UNC" Margin="0,0,8,8" Command="{Binding ShowUncPathCommand}" />
+                                    </WrapPanel>
 
-                        <Grid Grid.Row="2" ColumnDefinitions="*,110" ColumnSpacing="10">
-                            <TextBlock Text="心跳间隔（秒）" VerticalAlignment="Center" />
-                            <NumericUpDown Grid.Column="1"
-                                           Minimum="5"
-                                           Maximum="86400"
-                                           Increment="5"
-                                           Value="{Binding IntervalSeconds}" />
-                        </Grid>
+                                    <TextBlock Text="WSL 状态" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding WslStatusText}" FontFamily="Consolas" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
 
-                        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8">
-                            <Button Content="启用保活" Classes="Success" Command="{Binding StartKeepAliveSelectedCommand}" />
-                            <Button Content="停止保活" Command="{Binding StopKeepAliveSelectedCommand}" />
-                        </StackPanel>
+                        <TabItem Header="保活">
+                            <StackPanel Spacing="10">
+                                <ComboBox ItemsSource="{Binding KeepAliveModes}"
+                                          SelectedItem="{Binding SelectedKeepAliveMode}"
+                                          HorizontalAlignment="Stretch" />
 
-                        <Grid Grid.Row="4" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
-                            <TextBlock Text="{Binding SelectedDistribution.KeepAliveMode, FallbackValue=无}" Opacity="0.72" />
-                            <TextBlock Grid.Row="1" Text="{Binding SelectedDistribution.ErrorSummary, FallbackValue=无}" TextWrapping="Wrap" Opacity="0.72" />
-                            <TextBlock Grid.Row="2" Text="周期心跳适合低频唤醒；驻留进程适合作为服务运行。" Opacity="0.62" TextWrapping="Wrap" />
-                        </Grid>
-                    </Grid>
-                </husk:Card>
+                                <Grid ColumnDefinitions="*,110" ColumnSpacing="10">
+                                    <TextBlock Text="心跳间隔（秒）" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1"
+                                                   Minimum="5"
+                                                   Maximum="86400"
+                                                   Increment="5"
+                                                   Value="{Binding IntervalSeconds}" />
+                                </Grid>
 
-                <husk:Card Grid.Row="2">
-                    <Grid Margin="14" RowDefinitions="Auto,*" RowSpacing="10">
-                        <TextBlock Text="WSL 状态" FontSize="16" FontWeight="SemiBold" />
-                        <ScrollViewer Grid.Row="1">
-                            <TextBlock Text="{Binding WslStatusText}" FontFamily="Consolas" TextWrapping="Wrap" />
-                        </ScrollViewer>
-                    </Grid>
-                </husk:Card>
-            </Grid>
+                                <CheckBox Content="启动后自动恢复此发行版保活" IsChecked="{Binding AutoRestoreSelectedKeepAlive}" />
+
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="启用保活" Classes="Success" Command="{Binding StartKeepAliveSelectedCommand}" />
+                                    <Button Content="停止保活" Command="{Binding StopKeepAliveSelectedCommand}" />
+                                </StackPanel>
+
+                                <TextBlock Text="{Binding SelectedDistribution.KeepAliveMode, FallbackValue=无}" Opacity="0.72" />
+                                <TextBlock Text="{Binding SelectedDistribution.ErrorSummary, FallbackValue=无}" TextWrapping="Wrap" Opacity="0.72" />
+                            </StackPanel>
+                        </TabItem>
+
+                        <TabItem Header="诊断">
+                            <ScrollViewer>
+                                <StackPanel Spacing="10">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Content="采集状态" Command="{Binding RefreshSelectedDiagnosticsCommand}" />
+                                        <Button Content="安装 Helper" Command="{Binding InstallOrUpdateHelperCommand}" />
+                                    </StackPanel>
+
+                                    <TextBlock Text="资源" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding ResourceSummary}" TextWrapping="Wrap" />
+
+                                    <TextBlock Text="Helper" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding HelperStatusText}" TextWrapping="Wrap" />
+
+                                    <TextBlock Text="健康检查" FontWeight="SemiBold" />
+                                    <ComboBox ItemsSource="{Binding HealthCheckKinds}" SelectedItem="{Binding HealthCheckKind}" />
+                                    <TextBox PlaceholderText="Shell 命令" Text="{Binding HealthShellCommand}" />
+                                    <Grid ColumnDefinitions="*,100" ColumnSpacing="8">
+                                        <TextBox PlaceholderText="TCP Host" Text="{Binding HealthTcpHost}" />
+                                        <NumericUpDown Grid.Column="1" Minimum="1" Maximum="65535" Value="{Binding HealthTcpPort}" />
+                                    </Grid>
+                                    <TextBox PlaceholderText="systemd service" Text="{Binding HealthServiceName}" />
+                                    <Button Content="运行健康检查" Command="{Binding RunHealthCheckCommand}" />
+                                    <TextBlock Text="{Binding HealthCheckResultText}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="备份">
+                            <ScrollViewer>
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="导出当前发行版" FontWeight="SemiBold" />
+                                    <TextBox PlaceholderText="导出 tar 路径，留空则输出到桌面" Text="{Binding ExportTarPath}" />
+                                    <Button Content="导出" Command="{Binding ExportSelectedCommand}" />
+
+                                    <TextBlock Text="导入发行版" FontWeight="SemiBold" Margin="0,8,0,0" />
+                                    <TextBox PlaceholderText="新发行版名称" Text="{Binding ImportName}" />
+                                    <TextBox PlaceholderText="安装目录" Text="{Binding ImportInstallLocation}" />
+                                    <TextBox PlaceholderText="tar 文件路径" Text="{Binding ImportTarPath}" />
+                                    <Button Content="导入为 WSL2" Command="{Binding ImportDistributionCommand}" />
+
+                                    <TextBlock Text="危险操作" FontWeight="SemiBold" Margin="0,8,0,0" />
+                                    <TextBox PlaceholderText="输入当前发行版名称以确认注销" Text="{Binding UnregisterConfirmation}" />
+                                    <Button Content="注销当前发行版" Command="{Binding UnregisterSelectedCommand}" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="日志">
+                            <Grid RowDefinitions="Auto,*" RowSpacing="8">
+                                <TextBlock Text="{Binding LastNotificationText}" TextWrapping="Wrap" Opacity="0.72" />
+                                <ListBox Grid.Row="1" ItemsSource="{Binding LogEntries}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="models:AppLogEntry">
+                                            <Grid RowDefinitions="Auto,Auto" Margin="0,0,0,8">
+                                                <TextBlock Text="{Binding Message}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                <TextBlock Grid.Row="1" Text="{Binding Details}" Opacity="0.62" TextWrapping="Wrap" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                        </TabItem>
+
+                        <TabItem Header="设置">
+                            <StackPanel Spacing="10">
+                                <CheckBox Content="开机自启动" IsChecked="{Binding StartWithWindows}" />
+                                <CheckBox Content="启动时最小化到托盘" IsChecked="{Binding StartMinimizedToTray}" />
+                                <TextBlock Text="关闭主窗口时会隐藏到托盘；托盘菜单中的退出才会真正停止后台任务。" TextWrapping="Wrap" Opacity="0.72" />
+                            </StackPanel>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </husk:Card>
         </Grid>
 
         <TextBlock Grid.Row="3"
-                   Text="保活任务仅在本程序运行期间生效；关闭窗口会停止由本程序启动的保活进程。"
+                   Text="保活任务仅在本程序运行期间生效；关闭主窗口会隐藏到托盘，托盘菜单中的退出会停止由本程序启动的保活进程。"
                    Opacity="0.62" />
     </Grid>
 </husk:AppWindow>

@@ -9,6 +9,46 @@ public sealed class WslCli : IWslCli
 {
     private static readonly Regex ColumnSeparator = new(@"\s{2,}", RegexOptions.Compiled);
 
+    public static readonly TimeSpan DefaultCommandTimeout = TimeSpan.FromSeconds(30);
+
+    public Task<WslCommandResult> RunInDistributionAsync(
+        string name,
+        string command,
+        CancellationToken cancellationToken = default)
+    {
+        return RunAsync(["-d", name, "--exec", "/bin/sh", "-lc", command], cancellationToken);
+    }
+
+    public async Task<WslCommandResult> RunAsync(
+        IReadOnlyList<string> arguments,
+        CancellationToken cancellationToken = default)
+    {
+        using var process = new Process
+        {
+            StartInfo = CreateStartInfo(arguments)
+        };
+
+        process.Start();
+
+        var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
+
+        try
+        {
+            await process.WaitForExitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            TryKill(process);
+            throw;
+        }
+
+        var stdout = await stdoutTask;
+        var stderr = await stderrTask;
+
+        return new WslCommandResult(process.ExitCode, CleanOutput(stdout), CleanOutput(stderr));
+    }
+
     public async Task<IReadOnlyList<WslDistribution>> ListDistributionsAsync(CancellationToken cancellationToken = default)
     {
         var result = await RunAsync(["--list", "--verbose"], cancellationToken);
@@ -69,44 +109,6 @@ public sealed class WslCli : IWslCli
         }
 
         return process;
-    }
-
-    private static Task<WslCommandResult> RunInDistributionAsync(
-        string name,
-        string command,
-        CancellationToken cancellationToken)
-    {
-        return RunAsync(["-d", name, "--exec", "/bin/sh", "-lc", command], cancellationToken);
-    }
-
-    private static async Task<WslCommandResult> RunAsync(
-        IReadOnlyList<string> arguments,
-        CancellationToken cancellationToken)
-    {
-        using var process = new Process
-        {
-            StartInfo = CreateStartInfo(arguments)
-        };
-
-        process.Start();
-
-        var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
-
-        try
-        {
-            await process.WaitForExitAsync(cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            TryKill(process);
-            throw;
-        }
-
-        var stdout = await stdoutTask;
-        var stderr = await stderrTask;
-
-        return new WslCommandResult(process.ExitCode, CleanOutput(stdout), CleanOutput(stderr));
     }
 
     private static ProcessStartInfo CreateStartInfo(IReadOnlyList<string> arguments)

@@ -5,6 +5,13 @@ namespace WslGui.Services;
 
 public interface IWslCli
 {
+    Task<WslCommandResult> RunAsync(IReadOnlyList<string> arguments, CancellationToken cancellationToken = default);
+
+    Task<WslCommandResult> RunInDistributionAsync(
+        string name,
+        string command,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<WslDistribution>> ListDistributionsAsync(CancellationToken cancellationToken = default);
 
     Task<string> GetStatusTextAsync(CancellationToken cancellationToken = default);
